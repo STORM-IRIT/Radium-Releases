@@ -1,0 +1,64 @@
+name: Compile Radium ecosystem and generate artifacts
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+     - uses: actions/checkout@v2
+
+     - name: Compute Release name
+       run: echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
+
+     - name: Cache Qt
+       id: cache-qt
+       uses: actions/cache@v1
+       with:
+         path: ../Qt
+         key: ${{ runner.os }}-QtCache
+
+     - name: Install Qt
+       uses: jurplel/install-qt-action@v2
+       with:
+         cached: ${{ steps.cache-qt.outputs.cache-hit }}
+
+     - name: Configure Radium
+       run: |
+         echo "Configuring ${{ env.release_name }}-${{ runner.os }}"
+         mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed
+
+     - name: Compile Radium
+       run: cd build && cmake --build .
+
+     - name: Generate zip files
+       run: |
+         cd build/ && mv installed ${{ env.release_name }}-${{ runner.os }} &&  zip -r ../${{ env.release_name }}-${{ runner.os }}.zip ${{ env.release_name }}-${{ runner.os }}
+
+     - name: Create Release
+       id: create_release
+       uses: actions/create-release@v1
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       with:
+         tag_name: ${{ github.ref }}
+         release_name: ${{ env.release_name }}
+         draft: true
+         prerelease: true
+     - name: Upload Release Asset
+       id: upload-release-asset
+       uses: actions/upload-release-asset@v1
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       with:
+         upload_url: ${{ steps.create_release.outputs.upload_url }}
+         asset_path: ./${{ env.release_name }}-${{ runner.os }}.zip
+         asset_name: ${{ env.release_name }}-${{ runner.os }}.zip
+         asset_content_type: application/zip

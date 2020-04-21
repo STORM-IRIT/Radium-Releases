@@ -25,9 +25,7 @@ ExternalProject_Add( radiumproject
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
     INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-    BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Compiling Radium Documentation"
-    COMMAND       ${CMAKE_COMMAND} --build <BINARY_DIR> --target RadiumDoc
-    COMMAND       ${CMAKE_COMMAND} -E echo "Compiling in Installing Radium"
+    BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Compiling in Installing Radium"
     COMMAND       ${CMAKE_COMMAND} --build <BINARY_DIR> --target install
     CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
