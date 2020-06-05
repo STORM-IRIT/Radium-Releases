@@ -3,6 +3,8 @@ name: Compile Radium ecosystem and generate artifacts
 on:
   push:
     branches: [ master ]
+  repository_dispatch:
+    types: [code-update-event]
 
 jobs:
   build:
