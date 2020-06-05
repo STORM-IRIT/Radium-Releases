@@ -7,6 +7,27 @@ on:
     types: [code-update-event]
 
 jobs:
+  create_release:
+    runs-on: ubuntu-latest 
+    
+    steps:
+     - uses: actions/checkout@v2
+       
+     - name: Compute Release name
+       run: echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
+       
+     - name: Create Release
+       id: create_release
+       uses: actions/create-release@v1
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       with:
+         tag_name: ${{ github.ref }}
+         release_name: ${{ env.release_name }}
+         draft: true
+         prerelease: true
+     
+     
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -31,6 +52,11 @@ jobs:
        uses: jurplel/install-qt-action@v2
        with:
          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+         
+     - name: Add msbuild to PATH
+       uses: microsoft/setup-msbuild@v1.0.0
+       with:
+         vs-version: 16.6
 
      - name: Configure Radium
        run: |
@@ -44,16 +70,6 @@ jobs:
        run: |
          cd build/ && mv installed ${{ env.release_name }}-${{ runner.os }} &&  zip -r ../${{ env.release_name }}-${{ runner.os }}.zip ${{ env.release_name }}-${{ runner.os }}
 
-     - name: Create Release
-       id: create_release
-       uses: actions/create-release@v1
-       env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-       with:
-         tag_name: ${{ github.ref }}
-         release_name: ${{ env.release_name }}
-         draft: true
-         prerelease: true
      - name: Upload Release Asset
        id: upload-release-asset
        uses: actions/upload-release-asset@v1
