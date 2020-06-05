@@ -40,6 +40,12 @@ jobs:
 
      - name: Compute Release name
        run: echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
+         
+     - name: Add msbuild to PATH
+       uses: microsoft/setup-msbuild@v1.0.0
+       if: runner.os == 'Windows'
+       with:
+         vs-version: 16.6
 
      - name: Cache Qt
        id: cache-qt
@@ -52,11 +58,6 @@ jobs:
        uses: jurplel/install-qt-action@v2
        with:
          cached: ${{ steps.cache-qt.outputs.cache-hit }}
-         
-     - name: Add msbuild to PATH
-       uses: microsoft/setup-msbuild@v1.0.0
-       with:
-         vs-version: 16.6
 
      - name: Configure Radium
        run: |
