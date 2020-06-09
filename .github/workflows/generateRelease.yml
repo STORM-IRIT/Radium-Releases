@@ -6,38 +6,7 @@ on:
   repository_dispatch:
     types: [code-update-event]
 
-jobs:
-  create_release:
-    runs-on: ubuntu-latest 
-    
-    steps:
-     - uses: actions/checkout@v2
-       
-     - name: Compute Release name
-       run: echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
-       
-     - name: Create Release
-       id: create_release
-       uses: actions/create-release@v1
-       env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-       with:
-         tag_name: ${{ github.ref }}
-         release_name: ${{ env.release_name }}
-         draft: true
-         prerelease: true
-
-     - shell: bash
-       run: |
-         echo ${{ steps.create_release.outputs.upload_url }} > upload_url.txt
-
-     - name: Save release upload url to step 2
-       uses: actions/upload-artifact@v1
-       with:
-         name: upload_url
-         path: upload_url.txt
-     
-     
+jobs:     
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -48,14 +17,6 @@ jobs:
     steps:
      - uses: actions/checkout@v2
      - uses: seanmiddleditch/gha-setup-ninja@master
-     
-     - name: Load release upload url from step 1
-       uses: actions/download-artifact@v1
-       with:
-          name: upload_url
-
-     - name: Save release upload url as variable
-       run: echo ::set-env name=release_url::`cat upload_url/upload_url.txt`
 
      - name: Compute Release name
        run: echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
@@ -78,10 +39,17 @@ jobs:
        with:
          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
-     - name: Configure Radium
+     - name: Configure Radium without Assimp
+       if: runner.os == 'Windows'
        run: |
          echo "Configuring ${{ env.release_name }}-${{ runner.os }}"
-         mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -GNinja
+         mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -GNinja -DRADIUM_IO_ASSIMP=FALSE
+         
+     - name: Configure Radium with Assimp
+       if: runner.os != 'Windows'
+       run: |
+         echo "Configuring ${{ env.release_name }}-${{ runner.os }}"
+         mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -GNinja -DRADIUM_IO_ASSIMP=TRUE
 
      - name: Compile Radium
        run: cd build && cmake --build . --parallel --config Release
@@ -90,6 +58,46 @@ jobs:
        run: |
          cd build/ && mv installed ${{ env.release_name }}-${{ runner.os }} &&  zip -r ../${{ env.release_name }}-${{ runner.os }}.zip ${{ env.release_name }}-${{ runner.os }}
 
+     - name: Upload artifact
+       uses: actions/upload-artifact@v1
+       with:
+         name: ${{ env.release_name }}
+         path: ${{ env.release_name }}-${{ runner.os }}.zip
+       
+  create_release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      
+     - name: Compute Release name
+       run: echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
+       
+     - name: Create Release
+       id: create_release
+       uses: actions/create-release@v1
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       with:
+         tag_name: ${{ github.ref }}
+         release_name: ${{ env.release_name }}
+         draft: true
+         prerelease: true
+    
+    
+  upload_release:
+    needs: [create_release]
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    
+    steps:            
+     - name: Load artifacts from build
+       uses: actions/download-artifact@v1
+       with:
+          name: ${{ env.release_name }}
+         
      - name: Upload Release Asset
        id: upload-release-asset
        uses: actions/upload-release-asset@v1
@@ -100,3 +108,4 @@ jobs:
          asset_path: ./${{ env.release_name }}-${{ runner.os }}.zip
          asset_name: ${{ env.release_name }}-${{ runner.os }}.zip
          asset_content_type: application/zip
+
