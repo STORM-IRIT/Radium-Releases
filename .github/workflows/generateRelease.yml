@@ -12,7 +12,6 @@ jobs:
     
     steps:
      - uses: actions/checkout@v2
-     - uses: seanmiddleditch/gha-setup-ninja@master
        
      - name: Compute Release name
        run: echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
@@ -48,6 +47,7 @@ jobs:
 
     steps:
      - uses: actions/checkout@v2
+     - uses: seanmiddleditch/gha-setup-ninja@master
      
      - name: Load release upload url from step 1
        uses: actions/download-artifact@v1
