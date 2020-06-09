@@ -65,6 +65,7 @@ jobs:
          path: ${{ env.release_name }}-${{ runner.os }}.zip
        
   create_release:
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       
