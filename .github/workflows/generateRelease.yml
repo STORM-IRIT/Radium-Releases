@@ -84,7 +84,7 @@ jobs:
          mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -GNinja
 
      - name: Compile Radium
-       run: cd build && cmake --build . --parallel --config Release --target ninja
+       run: cd build && cmake --build . --parallel --config Release
 
      - name: Generate zip files
        run: |
