@@ -12,6 +12,7 @@ jobs:
     
     steps:
      - uses: actions/checkout@v2
+     - uses: seanmiddleditch/gha-setup-ninja@master
        
      - name: Compute Release name
        run: echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
