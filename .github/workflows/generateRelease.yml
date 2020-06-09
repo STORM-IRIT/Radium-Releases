@@ -80,10 +80,10 @@ jobs:
      - name: Configure Radium
        run: |
          echo "Configuring ${{ env.release_name }}-${{ runner.os }}"
-         mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed
+         mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -GNinja
 
      - name: Compile Radium
-       run: cd build && cmake --build .
+       run: cd build && cmake --build . --parallel --config Release --target ninja
 
      - name: Generate zip files
        run: |
