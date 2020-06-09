@@ -39,13 +39,13 @@ jobs:
        with:
          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
-     - name: Configure Radium without Assimp
+     - name: Configure Radium for Windows
        if: runner.os == 'Windows'
        run: |
          echo "Configuring ${{ env.release_name }}-${{ runner.os }}"
-         mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -GNinja -DRADIUM_IO_ASSIMP=FALSE
+         mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -GNinja -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_OBJECT_PATH_MAX=500
          
-     - name: Configure Radium with Assimp
+     - name: Configure Radium for MacOS/Linux
        if: runner.os != 'Windows'
        run: |
          echo "Configuring ${{ env.release_name }}-${{ runner.os }}"
@@ -65,7 +65,6 @@ jobs:
          path: ${{ env.release_name }}-${{ runner.os }}.zip
        
   create_release:
-    needs: [build]
     runs-on: ubuntu-latest
     steps:
       
