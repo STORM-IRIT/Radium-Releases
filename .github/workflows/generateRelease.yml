@@ -43,16 +43,14 @@ jobs:
          echo "Installation path: ${{ env.release_name }}-${{ runner.os }}"
          mkdir -p ${{ env.release_name }}-${{ runner.os }}/
      
-     - name: Download Radium Libraries
+     - name: Cloning Radium-Engine
        run: |
-         echo "Cloning Radium-Engine"
          mkdir src && cd src 
          git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch
          cd ..
          
      - name: Create build folder for Radium-Engine
        run: |
-         echo "Build path: build/Radium-Engine"
          mkdir -p build/Radium-Engine
 
      - name: Configure Radium for Windows
@@ -68,8 +66,23 @@ jobs:
          cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${{ env.release_name }}-${{ runner.os }}/ -GNinja -DRADIUM_IO_ASSIMP=TRUE
 
      - name: Compile Radium
-       run: cd build/Radium-Engine && cmake --build . --parallel --config Release
+       run: cd build/Radium-Engine && cmake --build . --parallel --config Release --target install
+     
+     - name: Cloning Radium-Apps
+       run: |
+         mkdir src && cd src 
+         git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch master --single-branch
+         cd ..
+         mkdir -p build/Radium-Apps
+         
+     - name: Configure Radium Apps
+       run: |
+         cd build/Radium-Apps 
+         cmake ../../src/Radium-Apps -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${{ env.release_name }}-${{ runner.os }}/ -GNinja -DRadium_DIR=../../${{ env.release_name }}-${{ runner.os }}
 
+     - name: Compile Radium Apps
+       run: cd build/Radium-Apps && cmake --build . --parallel --config Release --target install
+       
      - name: Generate zip files
        run: |
          zip -r ${{ env.release_name }}-${{ runner.os }}.zip ${{ env.release_name }}-${{ runner.os }}
