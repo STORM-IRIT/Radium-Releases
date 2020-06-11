@@ -16,9 +16,6 @@ jobs:
 
     steps:
      - uses: seanmiddleditch/gha-setup-ninja@master
-
-     - name: Compute Release name
-       run: echo '::set-env name=release_name::Radium-$(date +%Y.%m.%d)'
          
      - name: Add msbuild to PATH
        uses: microsoft/setup-msbuild@v1.0.0
@@ -41,21 +38,20 @@ jobs:
      - name: Clone, configure and build Radium (Windows)
        if: runner.os == 'Windows'
        run: |
+         echo '::set-env name=release_name::Radium-$(date +%Y.%m.%d)'
          echo "Installation path: ${{ env.release_name }}-${{ runner.os }}"
          mkdir -p ${{ env.release_name }}-${{ runner.os }}/
          
-         mkdir src && cd src 
-         git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch
-         cd ..
+         mkdir src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch && cd ..
          
-         mkdir -p build/Radium-Engine
-         cd build/Radium-Engine 
+         mkdir -p build/Radium-Engine && cd build/Radium-Engine
          cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${{ env.release_name }}-${{ runner.os }}/ -GNinja -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_OBJECT_PATH_MAX=500 -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
          cmake --build . --parallel --config Release --target install
          
      - name: Clone, configure and build Radium (MacOS Ubuntu)
        if: runner.os != 'Windows'
        run: |
+         echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
          echo "Installation path: ${{ env.release_name }}-${{ runner.os }}"
          mkdir -p ${{ env.release_name }}-${{ runner.os }}/
          
