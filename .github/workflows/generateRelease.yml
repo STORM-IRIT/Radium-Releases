@@ -15,7 +15,6 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
-     - uses: actions/checkout@v2
      - uses: seanmiddleditch/gha-setup-ninja@master
 
      - name: Compute Release name
@@ -38,25 +37,42 @@ jobs:
        uses: jurplel/install-qt-action@v2
        with:
          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+         
+     - name: Create installation folder
+       run: |
+         echo "Installation path: ${{ env.release_name }}-${{ runner.os }}"
+         mkdir -p ${{ env.release_name }}-${{ runner.os }}/
+     
+     - name: Download Radium Libraries
+       run: |
+         echo "Cloning Radium-Engine"
+         mkdir src && cd src 
+         git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch
+         cd ..
+         
+     - name: Create build folder for Radium-Engine
+       run: |
+         echo "Build path: build/Radium-Engine"
+         mkdir -p build/Radium-Engine
 
      - name: Configure Radium for Windows
        if: runner.os == 'Windows'
        run: |
-         echo "Configuring ${{ env.release_name }}-${{ runner.os }}"
-         mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -GNinja -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_OBJECT_PATH_MAX=500
+         cd build/Radium-Engine 
+         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${{ env.release_name }}-${{ runner.os }}/ -GNinja -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_OBJECT_PATH_MAX=500
          
      - name: Configure Radium for MacOS/Linux
        if: runner.os != 'Windows'
        run: |
-         echo "Configuring ${{ env.release_name }}-${{ runner.os }}"
-         mkdir -p build/installed && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -GNinja -DRADIUM_IO_ASSIMP=TRUE
+         cd build/Radium-Engine 
+         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${{ env.release_name }}-${{ runner.os }}/ -GNinja -DRADIUM_IO_ASSIMP=TRUE
 
      - name: Compile Radium
-       run: cd build && cmake --build . --parallel --config Release
+       run: cd build/Radium-Engine && cmake --build . --parallel --config Release
 
      - name: Generate zip files
        run: |
-         cd build/ && mv installed ${{ env.release_name }}-${{ runner.os }} &&  zip -r ../${{ env.release_name }}-${{ runner.os }}.zip ${{ env.release_name }}-${{ runner.os }}
+         zip -r ${{ env.release_name }}-${{ runner.os }}.zip ${{ env.release_name }}-${{ runner.os }}
 
      - name: Upload artifact
        uses: actions/upload-artifact@v1
