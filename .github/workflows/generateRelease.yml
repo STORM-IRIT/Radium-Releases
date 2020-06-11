@@ -57,7 +57,7 @@ jobs:
        if: runner.os == 'Windows'
        run: |
          cd build/Radium-Engine 
-         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${{ env.release_name }}-${{ runner.os }}/ -GNinja -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_OBJECT_PATH_MAX=500
+         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${{ env.release_name }}-${{ runner.os }}/ -GNinja -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_OBJECT_PATH_MAX=500 -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
          
      - name: Configure Radium for MacOS/Linux
        if: runner.os != 'Windows'
