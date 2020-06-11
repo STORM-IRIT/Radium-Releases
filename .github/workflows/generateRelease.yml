@@ -63,20 +63,17 @@ jobs:
        if: runner.os != 'Windows'
        run: |
          cd build/Radium-Engine 
-         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${{ env.release_name }}-${{ runner.os }}/ -GNinja -DRADIUM_IO_ASSIMP=TRUE
+         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=..\..\${{ env.release_name }}-${{ runner.os }} -GNinja -DRADIUM_IO_ASSIMP=TRUE
 
      - name: Compile Radium
        run: cd build/Radium-Engine && cmake --build . --parallel --config Release --target install
-     
-     - name: Cloning Radium-Apps
+         
+     - name: Clone and configure Radium Apps
        run: |
-         mkdir src && cd src 
+         cd src 
          git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch master --single-branch
          cd ..
          mkdir -p build/Radium-Apps
-         
-     - name: Configure Radium Apps
-       run: |
          cd build/Radium-Apps 
          cmake ../../src/Radium-Apps -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${{ env.release_name }}-${{ runner.os }}/ -GNinja -DRadium_DIR=../../${{ env.release_name }}-${{ runner.os }}
 
