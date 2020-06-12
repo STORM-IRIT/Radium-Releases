@@ -6,9 +6,6 @@ on:
   repository_dispatch:
     types: [code-update-event]
 
-env:
-  RELEASE_NAME: $(echo Radium-$(date +%Y.%m.%d))
-
 jobs:     
   build:
     runs-on: ${{ matrix.os }}
@@ -18,6 +15,10 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
+     - name: Compute Radium Release
+       id: releasename
+       run: echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
+       
      - uses: seanmiddleditch/gha-setup-ninja@master
          
      - name: Add msbuild to PATH
@@ -42,7 +43,8 @@ jobs:
      - name: Clone, configure and build Radium (Windows)
        if: runner.os == 'Windows'
        run: |
-         echo "Release name: ${{ env.RELEASE_NAME }}-${{ runner.os }}"
+         
+         echo "Release name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}"
 
          mkdir -p install/
          
@@ -55,7 +57,7 @@ jobs:
      - name: Clone, configure and build Radium (MacOS Ubuntu)
        if: runner.os != 'Windows'
        run: |
-         echo "Release name: ${{ env.RELEASE_NAME }}-${{ runner.os }}"
+         echo "Release name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}"
 
          mkdir -p install/
          
@@ -78,19 +80,23 @@ jobs:
        
      - name: Generate zip files
        run: |
-         mv install ${{ env.RELEASE_NAME }}-${{ runner.os }}
-         zip -r ${{ env.RELEASE_NAME }}-${{ runner.os }}.zip ${{ env.RELEASE_NAME }}-${{ runner.os }}
+         mv install ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
+         zip -r ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
 
      - name: Upload artifact
        uses: actions/upload-artifact@v1
        with:
-         name: ${{ env.RELEASE_NAME }}-${{ runner.os }}
-         path: ${{ env.RELEASE_NAME }}-${{ runner.os }}.zip
+         name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
+         path: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
        
   create_release:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
+      
+     - name: Compute Radium Release
+       id: releasename
+       run: echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
        
      - name: Create Release
        id: create_release
@@ -99,12 +105,12 @@ jobs:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
          tag_name: ${{ github.ref }}
-         release_name: ${{ env.RELEASE_NAME }}
+         release_name: ${{steps.releasename.outputs.RELEASE_NAME}}
          draft: true
          prerelease: true
 
      - name: set environment variables
-       run: echo ::set-env name=RELEASE_NAME::${{ steps.create_release.outputs.upload_url }}
+       run: echo "::set-env name=RELEASE_NAME::${{ steps.create_release.outputs.upload_url }}"
 
 
   upload_release:
