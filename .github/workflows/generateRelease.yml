@@ -51,7 +51,7 @@ jobs:
          mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch && cd ..
          
          mkdir -p build/Radium-Engine && cd build/Radium-Engine
-         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRADIUM_IO_ASSIMP=FALSE -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF
+         cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../../install -GNinja -DRADIUM_IO_ASSIMP=FALSE -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF  ../../src/Radium-Engine 
          ninja 
          ninja install
          
