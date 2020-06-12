@@ -34,38 +34,34 @@ jobs:
        uses: jurplel/install-qt-action@v2
        with:
          cached: ${{ steps.cache-qt.outputs.cache-hit }}
-     
-     - name: set environment variables
-       uses: allenevans/set-env@v1.0.0
-       with:
-         overwrite: false
-         release_name: eval 'Radium-$(date +%Y.%m.%d)'
          
      - name: Clone, configure and build Radium (Windows)
        if: runner.os == 'Windows'
        run: |
-         echo "Installation path: ${RELEASE_NAME}-${{ runner.os }}"
-         mkdir -p ${RELEASE_NAME}-${{ runner.os }}/
+         echo '::set-env name=release_name::Radium-$(date +%Y.%m.%d)'
+         echo Release name: ${{ env.release_name }}-${{ runner.os }}
+
+         mkdir -p install/
          
-         mkdir src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch && cd ..
+         mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch && cd ..
          
          mkdir -p build/Radium-Engine && cd build/Radium-Engine
-         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${RELEASE_NAME}-${{ runner.os }}/ -GNinja -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_OBJECT_PATH_MAX=500 -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
+         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_OBJECT_PATH_MAX=500 -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
          cmake --build . --parallel --config Release --target install
          
      - name: Clone, configure and build Radium (MacOS Ubuntu)
        if: runner.os != 'Windows'
        run: |
-         echo "Installation path: ${RELEASE_NAME}-${{ runner.os }}"
-         mkdir -p ${RELEASE_NAME}-${{ runner.os }}/
+         echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
+         echo Release name: ${{ env.release_name }}-${{ runner.os }}
+
+         mkdir -p install/
          
-         mkdir src && cd src 
-         git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch
-         cd ..
+         mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch && cd ..
          
          mkdir -p build/Radium-Engine
          cd build/Radium-Engine 
-         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${RELEASE_NAME}-${{ runner.os }} -GNinja -DRADIUM_IO_ASSIMP=TRUE
+         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRADIUM_IO_ASSIMP=TRUE
          cmake --build . --parallel --config Release --target install
          
      - name: Clone and configure Radium Apps
@@ -75,27 +71,24 @@ jobs:
          cd ..
          mkdir -p build/Radium-Apps
          cd build/Radium-Apps 
-         cmake ../../src/Radium-Apps -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../${RELEASE_NAME}-${{ runner.os }}/ -GNinja -DRadium_DIR=../../${RELEASE_NAME}-${{ runner.os }}/lib/cmake/Radium
+         cmake ../../src/Radium-Apps -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRadium_DIR=../../install/lib/cmake/Radium
          cmake --build . --parallel --config Release --target install
        
      - name: Generate zip files
        run: |
-         zip -r ${RELEASE_NAME}-${{ runner.os }}.zip ${RELEASE_NAME}-${{ runner.os }}
+         mv install ${{ env.release_name }}-${{ runner.os }}
+         zip -r ${{ env.release_name }}-${{ runner.os }}.zip ${{ env.release_name }}-${{ runner.os }}
 
      - name: Upload artifact
        uses: actions/upload-artifact@v1
        with:
-         name: ${RELEASE_NAME}
-         path: ${RELEASE_NAME}-${{ runner.os }}.zip
+         name: ${{ env.release_name }}-${{ runner.os }}
+         path: ${{ env.release_name }}-${{ runner.os }}.zip
        
   create_release:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-     - name: set environment variables
-       uses: allenevans/set-env@v1.0.0
-       with:
-         release_name: 'Radium-$(date +%Y.%m.%d)'
        
      - name: Create Release
        id: create_release
@@ -104,11 +97,14 @@ jobs:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
          tag_name: ${{ github.ref }}
-         release_name: ${RELEASE_NAME}
+         release_name: ${{ env.release_name }}
          draft: true
          prerelease: true
-    
-    
+
+     - name: set environment variables
+       run: echo ::set-env name=release_url::${{ steps.create_release.outputs.upload_url }}
+
+
   upload_release:
     needs: [create_release]
     runs-on: ${{ matrix.os }}
@@ -121,12 +117,12 @@ jobs:
      - name: set environment variables
        uses: allenevans/set-env@v1.0.0
        with:
-         release_name: 'Radium-$(date +%Y.%m.%d)'
+         release_name: ${{ env.release_name }}
          
      - name: Load artifacts from build
        uses: actions/download-artifact@v1
        with:
-          name: ${RELEASE_NAME}
+          name: ${{ env.release_name }}
          
      - name: Upload Release Asset
        id: upload-release-asset
