@@ -7,7 +7,7 @@ on:
     types: [code-update-event]
 
 env:
-  RELEASE_NAME: Radium-$(date +%Y.%m.%d)
+  RELEASE_NAME: $(echo Radium-$(date +%Y.%m.%d))
 
 jobs:     
   build:
@@ -49,7 +49,7 @@ jobs:
          mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch && cd ..
          
          mkdir -p build/Radium-Engine && cd build/Radium-Engine
-         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_OBJECT_PATH_MAX=500 -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
+         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRADIUM_IO_ASSIMP=FALSE -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
          cmake --build . --parallel --config Release --target install
          
      - name: Clone, configure and build Radium (MacOS Ubuntu)
