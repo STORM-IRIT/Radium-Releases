@@ -46,7 +46,7 @@ jobs:
 
          mkdir -p install/
          
-         mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch && cd ..
+         mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch nmellado-fix_releases --single-branch && cd ..
          
          mkdir -p build/Radium-Engine
          cd build/Radium-Engine 
