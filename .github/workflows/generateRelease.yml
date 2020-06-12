@@ -18,12 +18,6 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
-     - name: Release name
-       run: |
-         echo "Release name: $RELEASE_NAME-${{ runner.os }}"
-         echo "Release name: ${{ env.RELEASE_NAME }}-${{ runner.os }}"
-
-
      - uses: seanmiddleditch/gha-setup-ninja@master
          
      - name: Add msbuild to PATH
@@ -48,7 +42,7 @@ jobs:
      - name: Clone, configure and build Radium (Windows)
        if: runner.os == 'Windows'
        run: |
-         echo "Release name: $RELEASE_NAME-${{ runner.os }}"
+         echo "Release name: ${{ env.RELEASE_NAME }}-${{ runner.os }}"
 
          mkdir -p install/
          
@@ -61,7 +55,7 @@ jobs:
      - name: Clone, configure and build Radium (MacOS Ubuntu)
        if: runner.os != 'Windows'
        run: |
-         echo "Release name: $RELEASE_NAME-${{ runner.os }}"
+         echo "Release name: ${{ env.RELEASE_NAME }}-${{ runner.os }}"
 
          mkdir -p install/
          
@@ -84,14 +78,14 @@ jobs:
        
      - name: Generate zip files
        run: |
-         mv install $RELEASE_NAME-${{ runner.os }}
-         zip -r $RELEASE_NAME-${{ runner.os }}.zip $RELEASE_NAME-${{ runner.os }}
+         mv install ${{ env.RELEASE_NAME }}-${{ runner.os }}
+         zip -r ${{ env.RELEASE_NAME }}-${{ runner.os }}.zip ${{ env.RELEASE_NAME }}-${{ runner.os }}
 
      - name: Upload artifact
        uses: actions/upload-artifact@v1
        with:
-         name: $RELEASE_NAME-${{ runner.os }}
-         path: $RELEASE_NAME-${{ runner.os }}.zip
+         name: ${{ env.RELEASE_NAME }}-${{ runner.os }}
+         path: ${{ env.RELEASE_NAME }}-${{ runner.os }}.zip
        
   create_release:
     needs: [build]
@@ -105,12 +99,12 @@ jobs:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
          tag_name: ${{ github.ref }}
-         release_name: $RELEASE_NAME
+         release_name: ${{ env.RELEASE_NAME }}
          draft: true
          prerelease: true
 
      - name: set environment variables
-       run: echo ::set-env name=release_url::${{ steps.create_release.outputs.upload_url }}
+       run: echo ::set-env name=RELEASE_NAME::${{ steps.create_release.outputs.upload_url }}
 
 
   upload_release:
@@ -125,12 +119,12 @@ jobs:
      - name: set environment variables
        uses: allenevans/set-env@v1.0.0
        with:
-         release_name: $RELEASE_NAME
+         release_name: ${{ env.RELEASE_NAME }}
          
      - name: Load artifacts from build
        uses: actions/download-artifact@v1
        with:
-          name: $RELEASE_NAME
+          name: ${{ env.RELEASE_NAME }}
          
      - name: Upload Release Asset
        id: upload-release-asset
@@ -138,8 +132,8 @@ jobs:
        env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
-         upload_url: ${{ env.release_url }}
-         asset_path: ./$RELEASE_NAME-${{ runner.os }}.zip
-         asset_name: $RELEASE_NAME-${{ runner.os }}.zip
+         upload_url: ${{ env.RELEASE_NAME }}
+         asset_path: ./${{ env.RELEASE_NAME }}-${{ runner.os }}.zip
+         asset_name: ${{ env.RELEASE_NAME }}-${{ runner.os }}.zip
          asset_content_type: application/zip
 
