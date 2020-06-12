@@ -118,21 +118,22 @@ jobs:
   upload_release:
     needs: [create_release]
     runs-on: ${{ matrix.os }}
+    if: always()
     
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     
-    steps:            
-     - name: set environment variables
-       uses: allenevans/set-env@v1.0.0
-       with:
-         release_name: ${{ env.RELEASE_NAME }}
+    steps:   
+      
+     - name: Compute Radium Release
+       id: releasename
+       run: echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
          
      - name: Load artifacts from build
        uses: actions/download-artifact@v1
        with:
-          name: ${{ env.RELEASE_NAME }}
+          name: ${{steps.releasename.outputs.RELEASE_NAME}}
          
      - name: Upload Release Asset
        id: upload-release-asset
@@ -140,8 +141,8 @@ jobs:
        env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
-         upload_url: ${{ env.RELEASE_NAME }}
-         asset_path: ./${{ env.RELEASE_NAME }}-${{ runner.os }}.zip
-         asset_name: ${{ env.RELEASE_NAME }}-${{ runner.os }}.zip
+         upload_url: ${{steps.releasename.outputs.RELEASE_NAME}}
+         asset_path: ./${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
+         asset_name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
          asset_content_type: application/zip
 
