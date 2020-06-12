@@ -50,14 +50,7 @@ jobs:
          
          mkdir -p build/Radium-Engine
          cd build/Radium-Engine 
-         cmake ../../src/Radium-Engine \
-                 -GNinja \
-                 -DCMAKE_BUILD_TYPE=Release \
-                 -DCMAKE_INSTALL_PREFIX=../../install/ \
-                 -DRADIUM_IO_ASSIMP=TRUE \
-                 -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT \
-                 -DRADIUM_UPDATE_VERSION=OFF \
-                 -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
+         cmake ../../src/Radium-Engine -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRADIUM_IO_ASSIMP=TRUE -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
          cmake --build . --parallel --config Release --target install
          
      - name: Clone and configure Radium Apps
