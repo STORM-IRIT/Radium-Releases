@@ -51,8 +51,9 @@ jobs:
          mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch && cd ..
          
          mkdir -p build/Radium-Engine && cd build/Radium-Engine
-         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRADIUM_IO_ASSIMP=FALSE -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
-         cmake --build . --parallel --config Release --target install
+         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRADIUM_IO_ASSIMP=FALSE -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF
+         ninja 
+         ninja install
          
      - name: Clone, configure and build Radium (MacOS Ubuntu)
        if: runner.os != 'Windows'
@@ -65,7 +66,7 @@ jobs:
          
          mkdir -p build/Radium-Engine
          cd build/Radium-Engine 
-         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRADIUM_IO_ASSIMP=TRUE
+         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRADIUM_IO_ASSIMP=TRUE -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF
          cmake --build . --parallel --config Release --target install
          
      - name: Clone and configure Radium Apps
@@ -92,6 +93,7 @@ jobs:
   create_release:
     needs: [build]
     runs-on: ubuntu-latest
+    if: always()
     steps:
       
      - name: Compute Radium Release
