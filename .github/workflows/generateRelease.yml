@@ -41,7 +41,6 @@ jobs:
 
          
      - name: Clone, configure and build Radium
-       if: runner.os != 'Windows'
        run: |
          echo "Release name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}"
 
@@ -79,7 +78,7 @@ jobs:
      - name: Upload artifact
        uses: actions/upload-artifact@v1
        with:
-         name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
+         name: binaries
          path: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
        
   create_release:
@@ -103,8 +102,17 @@ jobs:
          draft: true
          prerelease: true
 
+     - shell: bash
+       run: ${{ steps.create_release.outputs.upload_url }} > release-url.txt
+
+     - name: Save upload url for next stop
+       uses: actions/upload-artifact@v1
+       with:
+         name: releaseurl
+         path: release-url.txt
+
      - name: set environment variables
-       run: echo "::set-env name=RELEASE_NAME::${{ steps.create_release.outputs.upload_url }}"
+       run: echo "::set-env name=RELEASE_URL::${{ steps.create_release.outputs.upload_url }}"
 
 
   upload_release:
@@ -117,15 +125,22 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
     
     steps:   
-      
-     - name: Compute Radium Release
-       id: releasename
-       run: echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
          
      - name: Load artifacts from build
        uses: actions/download-artifact@v1
        with:
-          name: ${{steps.releasename.outputs.RELEASE_NAME}}
+          name: releaseurl
+      
+     - name: Compute Radium Release
+       id: releaseinfo
+       run: |
+        echo "::set-output name=RELEASE_URL::`cat releaseurl/release-url.txt`"
+        echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
+         
+     - name: Load artifacts from build
+       uses: actions/download-artifact@v1
+       with:
+          name: binaries
          
      - name: Upload Release Asset
        id: upload-release-asset
@@ -133,8 +148,8 @@ jobs:
        env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
-         upload_url: ${{steps.releasename.outputs.RELEASE_NAME}}
-         asset_path: ./${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
-         asset_name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
+         upload_url: ${{steps.releaseinfo.outputs.RELEASE_URL}}
+         asset_path: ./${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
+         asset_name: ${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
          asset_content_type: application/zip
 
