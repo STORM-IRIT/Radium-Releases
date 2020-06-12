@@ -40,22 +40,7 @@ jobs:
          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
          
-     - name: Clone, configure and build Radium (Windows)
-       if: runner.os == 'Windows'
-       run: |
-         
-         echo "Release name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}"
-
-         mkdir -p install/
-         
-         mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --branch master --single-branch && cd ..
-         
-         mkdir -p build/Radium-Engine && cd build/Radium-Engine
-         cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=..\..\install -DRADIUM_IO_ASSIMP=FALSE -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF  ../../src/Radium-Engine 
-         ninja 
-         ninja install
-         
-     - name: Clone, configure and build Radium (MacOS Ubuntu)
+     - name: Clone, configure and build Radium
        if: runner.os != 'Windows'
        run: |
          echo "Release name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}"
@@ -66,7 +51,14 @@ jobs:
          
          mkdir -p build/Radium-Engine
          cd build/Radium-Engine 
-         cmake ../../src/Radium-Engine -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRADIUM_IO_ASSIMP=TRUE -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF
+         cmake ../../src/Radium-Engine \
+                 -GNinja \
+                 -DCMAKE_BUILD_TYPE=Release \
+                 -DCMAKE_INSTALL_PREFIX=../../install/ \
+                 -DRADIUM_IO_ASSIMP=TRUE \
+                 -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT \
+                 -DRADIUM_UPDATE_VERSION=OFF \
+                 -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
          cmake --build . --parallel --config Release --target install
          
      - name: Clone and configure Radium Apps
