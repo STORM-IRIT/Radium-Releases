@@ -38,7 +38,7 @@ jobs:
      - name: Clone, configure and build Radium (Windows)
        if: runner.os == 'Windows'
        run: |
-         echo '::set-env name=release_name::Radium-$(date +%Y.%m.%d)'
+         echo "::set-env name=release_name::Radium-$(date +%Y.%m.%d)"
          echo Release name: ${{ env.release_name }}-${{ runner.os }}
 
          mkdir -p install/
@@ -52,7 +52,7 @@ jobs:
      - name: Clone, configure and build Radium (MacOS Ubuntu)
        if: runner.os != 'Windows'
        run: |
-         echo ::set-env name=release_name::Radium-$(date +%Y.%m.%d)
+         echo "::set-env name=release_name::Radium-$(date +%Y.%m.%d)"
          echo Release name: ${{ env.release_name }}-${{ runner.os }}
 
          mkdir -p install/
