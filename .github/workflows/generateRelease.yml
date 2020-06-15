@@ -113,7 +113,7 @@ jobs:
          prerelease: true
 
      - shell: bash
-       run: ${{ steps.create_release.outputs.upload_url }} >> release-url.txt
+       run: echo ${{ steps.create_release.outputs.upload_url }} >> release-url.txt
 
      - name: Save upload url for next stop
        uses: actions/upload-artifact@v1
