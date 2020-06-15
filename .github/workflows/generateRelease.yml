@@ -40,7 +40,8 @@ jobs:
          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
          
-     - name: Clone, configure and build Radium
+     - shell: bash
+       name: Clone, configure and build Radium
        run: |
          echo "Release name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}"
 
@@ -51,8 +52,10 @@ jobs:
          mkdir -p build/Radium-Engine
          cd build/Radium-Engine 
          cmake ../../src/Radium-Engine -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRADIUM_IO_ASSIMP=TRUE -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
+         cmake --build . --parallel --config Release --target install
          
-     - name: Clone and configure Radium Apps
+     - shell: bash
+       name: Clone and configure Radium Apps
        run: |
          cd src 
          git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch master --single-branch
@@ -61,8 +64,9 @@ jobs:
          cd build/Radium-Apps 
          cmake ../../src/Radium-Apps -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRadium_DIR=../../install/lib/cmake/Radium
          cmake --build . --parallel --config Release --target install
-       
-     - name: Generate zip files
+     
+     - shell: bash  
+       name: Generate zip files
        run: |
          mv install ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
          zip -r ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
@@ -79,7 +83,8 @@ jobs:
     if: always()
     steps:
       
-     - name: Compute Radium Release
+     - shell: bash
+       name: Compute Radium Release
        id: releasename
        run: echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
        
@@ -120,7 +125,8 @@ jobs:
        with:
           name: releaseurl
       
-     - name: Compute Radium Release
+     - shell: bash
+       name: Compute Radium Release
        id: releaseinfo
        run: |
         echo "::set-output name=RELEASE_URL::`cat releaseurl/release-url.txt`"
