@@ -1,5 +1,9 @@
 name: Compile Radium ecosystem and generate artifacts
 
+defaults:
+  run:
+    shell: bash
+
 on:
   push:
     branches: [ master ]
@@ -39,36 +43,31 @@ jobs:
        with:
          cached: ${{ steps.cache-qt.outputs.cache-hit }}
          
-     - shell: bash
-       name: Clone Radium
+     - name: Clone Radium
        run: |
          echo "Release name: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}"
          mkdir -p install/
          mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --single-branch && cd ..
          mkdir -p build/Radium-Engine
          
-     - shell: bash
-       name: Configure Radium For Windows
+     - name: Configure Radium For Windows
        if: runner.os == 'Windows'
        run: |
          cd build/Radium-Engine 
          cmake ../../src/Radium-Engine -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
          
-     - shell: bash
-       name: Configure Radium For Macos and Linux
+     - name: Configure Radium For Macos and Linux
        if: runner.os != 'Windows'
        run: |
          cd build/Radium-Engine 
          cmake ../../src/Radium-Engine -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRADIUM_IO_ASSIMP=TRUE -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
          
-     - shell: bash
-       name: Build Radium
+     - name: Build Radium
        run: |
          cd build/Radium-Engine 
          cmake --build . --parallel --config Release --target install
          
-     - shell: bash
-       name: Clone and configure Radium Apps
+     - name: Clone and configure Radium Apps
        run: |
          cd src 
          git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch master --single-branch
@@ -78,8 +77,7 @@ jobs:
          cmake ../../src/Radium-Apps -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRadium_DIR=../../install/lib/cmake/Radium
          cmake --build . --parallel --config Release --target install
      
-     - shell: bash  
-       name: Generate zip files
+     - name: Generate zip files
        run: |
          mv install ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
          zip -r ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
@@ -96,8 +94,7 @@ jobs:
     if: always()
     steps:
       
-     - shell: bash
-       name: Compute Radium Release
+     - name: Compute Radium Release
        id: releasename
        run: echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
        
@@ -113,6 +110,7 @@ jobs:
          prerelease: true
 
      - shell: bash
+       name: Cache upload url
        run: echo ${{ steps.create_release.outputs.upload_url }} >> release-url.txt
 
      - name: Save upload url for next stop
@@ -138,8 +136,7 @@ jobs:
        with:
           name: releaseurl
       
-     - shell: bash
-       name: Compute Radium Release
+     - name: Compute Radium Release
        id: releaseinfo
        run: |
         echo "::set-output name=RELEASE_URL::`cat releaseurl/release-url.txt`"
