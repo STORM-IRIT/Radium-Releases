@@ -26,10 +26,8 @@ jobs:
      - uses: seanmiddleditch/gha-setup-ninja@master
          
      - name: Add msbuild to PATH
-       uses: microsoft/setup-msbuild@v1.0.0
+       uses: seanmiddleditch/gha-setup-vsdevenv@master
        if: runner.os == 'Windows'
-       with:
-         vs-version: 16.6
 
      - name: Install Qt
        uses: jurplel/install-qt-action@v2
