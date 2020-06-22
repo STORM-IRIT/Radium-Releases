@@ -16,7 +16,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        config:
+          - { name: "Windows MSVC", os: windows-latest, cc: "cl.exe", cxx: "cl.exe", assimp: "OFF" }
+          - { name: "Ubuntu gcc", os: ubuntu-latest, cc: "gcc", cxx: "g++", assimp: "ON" }
+          - { name: "MacOS clang", os: macos-latest, cc: "clang", cxx: "clang++", assimp: "ON" }
 
     steps:
      - name: Compute Radium Release
@@ -41,17 +44,10 @@ jobs:
          mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --single-branch && cd ..
          mkdir -p build/Radium-Engine
          
-     - name: Configure Radium For Windows
-       if: runner.os == 'Windows'
+     - name: Configure Radium
        run: |
          cd build/Radium-Engine 
-         cmake ../../src/Radium-Engine -GNinja -DCMAKE_CXX_COMPILER=cl.exe -DCMAKE_C_COMPILER=cl.exe -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRADIUM_IO_ASSIMP=FALSE -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
-         
-     - name: Configure Radium For Macos and Linux
-       if: runner.os != 'Windows'
-       run: |
-         cd build/Radium-Engine 
-         cmake ../../src/Radium-Engine -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRADIUM_IO_ASSIMP=TRUE -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
+         cmake ../../src/Radium-Engine -GNinja -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRADIUM_IO_ASSIMP=${{ matrix.config.assimp }} -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
          
      - name: Build Radium
        run: |
@@ -65,7 +61,11 @@ jobs:
          cd ..
          mkdir -p build/Radium-Apps
          cd build/Radium-Apps 
-         cmake ../../src/Radium-Apps -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -GNinja -DRadium_DIR=../../install/lib/cmake/Radium
+         cmake ../../src/Radium-Apps -GNinja -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRadium_DIR=../../install/lib/cmake/Radium
+
+     - name: Build Radium Apps
+       run: |
+         cd build/Radium-Apps 
          cmake --build . --parallel --config Release --target install
      
      - name: Generate zip files
@@ -103,7 +103,6 @@ jobs:
      - shell: bash
        name: Cache upload url
        run: |
-         echo ${{ steps.create_release.outputs.upload_url }}
          echo ${{ steps.create_release.outputs.upload_url }} >> release-url.txt
 
      - name: Save upload url for next stop
