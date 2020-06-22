@@ -67,12 +67,17 @@ jobs:
        run: |
          cd build/Radium-Apps 
          cmake --build . --parallel --config Release --target install
-     
-     - name: Generate zip files
+         
+     - name: Prepare installation directory for zipping
        run: |
          mv install ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
-         zip -r ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
-
+    
+     - name: Archive Release
+       uses: thedoctor0/zip-release@master
+       with:
+         filename: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
+         path: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
+     
      - name: Upload artifact
        uses: actions/upload-artifact@v1
        with:
