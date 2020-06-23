@@ -103,7 +103,7 @@ jobs:
      - shell: bash
        name: Cache upload url
        run: |
-         echo ${{ steps.create_release.outputs.upload_url }} > release-url.txt
+         echo "${{ steps.create_release.outputs.upload_url }}" > release-url.txt
 
      - name: Save upload url for next stop
        uses: actions/upload-artifact@v1
