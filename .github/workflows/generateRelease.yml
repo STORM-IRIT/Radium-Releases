@@ -70,7 +70,7 @@ jobs:
      - name: Prepare installation directory for zipping
        run: |
          mv install ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
-         7z a -tzip "${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip" "./${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}/*"
+         7z a -tzip "${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip" "./${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}/"
      
      - name: Upload artifact
        uses: actions/upload-artifact@v1
