@@ -145,7 +145,8 @@ jobs:
        env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
-         upload_url: ./binaries/${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
+         upload_url: ${{steps.releaseinfo.outputs.RELEASE_URL}}
+         asset_path: ./binaries/${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
          asset_name: ${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
          asset_content_type: application/zip
 
