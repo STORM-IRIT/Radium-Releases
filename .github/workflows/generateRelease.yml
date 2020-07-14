@@ -62,6 +62,11 @@ jobs:
        run: |
          cd build/Radium-Apps 
          cmake --build . --parallel --config Release --target install
+         
+     - name: Run qtdeploy on windows
+       if: runner.os == 'Windows'
+       run: |
+         windeployqt install/bin
 
      - name: Compute Radium Release
        id: releasename
