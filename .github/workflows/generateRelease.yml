@@ -66,7 +66,7 @@ jobs:
      - name: Run qtdeploy on windows
        if: runner.os == 'Windows'
        run: |
-         windeployqt.exe install/bin/main-app.exe
+         windeployqt.exe install/bin/Radium-Sandbox.exe
 
      - name: Compute Radium Release
        id: releasename
