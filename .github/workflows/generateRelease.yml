@@ -17,9 +17,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { name: "Windows MSVC", os: windows-latest, cc: "cl.exe", cxx: "cl.exe", assimp: "OFF" }
-          - { name: "Ubuntu gcc", os: ubuntu-latest, cc: "gcc", cxx: "g++", assimp: "ON" }
-          - { name: "MacOS clang", os: macos-latest, cc: "clang", cxx: "clang++", assimp: "ON" }
+          - { name: "Windows MSVC", suffix: "Windows", os: windows-latest, cc: "cl.exe", cxx: "cl.exe", assimp: "OFF" }
+          - { name: "Ubuntu gcc", suffix: "Linux-gcc7", os: ubuntu-18.04, cc: "gcc", cxx: "g++", assimp: "ON" }
+          - { name: "Ubuntu gcc", suffix: "Linux-gcc10", os: ubuntu-20.04, cc: "gcc-10", cxx: "g++-10", assimp: "ON" }
+          - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++", assimp: "ON" }
 
     steps:       
      - uses: seanmiddleditch/gha-setup-ninja@master
@@ -74,14 +75,14 @@ jobs:
          
      - name: Prepare installation directory for zipping
        run: |
-         mv install ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}
-         7z a -tzip "${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip" "./${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}/"
+         mv install ${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}
+         7z a -tzip "${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip" "./${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}/"
      
      - name: Upload artifact
        uses: actions/upload-artifact@v1
        with:
          name: binaries
-         path: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
+         path: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
        
   create_release:
     needs: [build]
@@ -126,7 +127,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        config:
+          - { name: "Windows MSVC", suffix: "Windows", os: windows-latest, cc: "cl.exe", cxx: "cl.exe", assimp: "OFF" }
+          - { name: "Ubuntu gcc", suffix: "Linux-gcc7", os: ubuntu-18.04, cc: "gcc", cxx: "g++", assimp: "ON" }
+          - { name: "Ubuntu gcc", suffix: "Linux-gcc10", os: ubuntu-20.04, cc: "gcc-10", cxx: "g++-10", assimp: "ON" }
+          - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++", assimp: "ON" }
     
     steps:   
          
@@ -153,7 +158,7 @@ jobs:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
          upload_url: ${{steps.releaseinfo.outputs.RELEASE_URL}}
-         asset_path: ./binaries/${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
+         asset_path: ./binaries/${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
          asset_name: ${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ runner.os }}.zip
          asset_content_type: application/zip
 
