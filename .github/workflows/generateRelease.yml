@@ -9,6 +9,9 @@ on:
     branches: [ master ]
   repository_dispatch:
     types: [code-update-event]
+  pull_request:
+    branches:
+      - master
 
 jobs:     
   build:
@@ -108,6 +111,7 @@ jobs:
        with:
           name: message
      - name: Create Release
+       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
        id: create_release
        uses: softprops/action-gh-release@v1
        #uses: actions/create-release@v1
@@ -119,6 +123,16 @@ jobs:
          draft: false
          prerelease: true
          body_path: message/message.txt
+     - name: Print debug infor for PR
+       if: ${{ github.event_name != 'push' || github.ref != 'refs/heads/master' }}
+       run: |
+         echo "Debug informations for PR"
+         echo "tag_name: ${{steps.releasename.outputs.TAG_NAME}}"
+         echo "name: ${{steps.releasename.outputs.RELEASE_NAME}}"
+         echo "draft: false"
+         echo "prerelease: true"
+         echo "body_path: message/message.txt"
+         cat message/message.txt
 
      - shell: bash
        name: Cache upload url
@@ -166,6 +180,7 @@ jobs:
 
      - name: Upload Release Asset
        id: upload-release-asset
+       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
        uses: actions/upload-release-asset@v1
        env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
