@@ -77,13 +77,21 @@ jobs:
        run: |
          mv install ${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}
          7z a -tzip "${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip" "./${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}/"
-     
+         cd src/Radium-Engine/
+         echo "Release Changelog" >../../message.txt
+         git log -1 | tail -n +6 >> ../..//message.txt
+
      - name: Upload artifact
        uses: actions/upload-artifact@v1
        with:
          name: binaries
          path: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
-       
+     - name: Upload message
+       uses: actions/upload-artifact@v1
+       with:
+         name: message
+         path: ./message.txt
+
   create_release:
     needs: [build]
     runs-on: ubuntu-latest
@@ -95,17 +103,22 @@ jobs:
        run: |
          echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
          echo "::set-output name=TAG_NAME::$(date +'%Y.%m.%d')"
-       
+     - name: Load message from build
+       uses: actions/download-artifact@v1
+       with:
+          name: message
      - name: Create Release
        id: create_release
-       uses: actions/create-release@v1
+       uses: softprops/action-gh-release@v1
+       #uses: actions/create-release@v1
        env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
          tag_name: ${{steps.releasename.outputs.TAG_NAME}}
-         release_name: ${{steps.releasename.outputs.RELEASE_NAME}}
+         name: ${{steps.releasename.outputs.RELEASE_NAME}}
          draft: false
          prerelease: true
+         body_path: message/message.txt
 
      - shell: bash
        name: Cache upload url
@@ -123,7 +136,7 @@ jobs:
     needs: [create_release]
     runs-on: ${{ matrix.config.os }}
     if: always()
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -132,20 +145,20 @@ jobs:
           - { name: "Ubuntu gcc", suffix: "Linux-gcc7", os: ubuntu-18.04, cc: "gcc", cxx: "g++", assimp: "ON" }
           - { name: "Ubuntu gcc", suffix: "Linux-gcc10", os: ubuntu-20.04, cc: "gcc-10", cxx: "g++-10", assimp: "ON" }
           - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++", assimp: "ON" }
+
+    steps:
     
-    steps:   
-         
      - name: Load artifacts from build
        uses: actions/download-artifact@v1
        with:
           name: releaseurl
-      
+
      - name: Compute Radium Release
        id: releaseinfo
        run: |
         echo "::set-output name=RELEASE_URL::`cat releaseurl/release-url.txt`"
         echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
-         
+
      - name: Load artifacts from build
        uses: actions/download-artifact@v1
        with:
