@@ -110,16 +110,25 @@ jobs:
        uses: actions/download-artifact@v1
        with:
           name: message
+     - name: Delete Release if already present
+       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+       uses: dev-drprasad/delete-tag-and-release@v0.1.2
+       with:
+         delete_release: true # default: false
+         tag_name: ${{steps.releasename.outputs.TAG_NAME}} # tag name to delete
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
      - name: Create Release
        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
        id: create_release
-       uses: softprops/action-gh-release@v1
-       #uses: actions/create-release@v1
+       #uses: softprops/action-gh-release@v1
+       uses: actions/create-release@v1
        env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
          tag_name: ${{steps.releasename.outputs.TAG_NAME}}
-         name: ${{steps.releasename.outputs.RELEASE_NAME}}
+         #name: ${{steps.releasename.outputs.RELEASE_NAME}}
+         release_name: ${{steps.releasename.outputs.RELEASE_NAME}}
          draft: false
          prerelease: true
          body_path: message/message.txt
