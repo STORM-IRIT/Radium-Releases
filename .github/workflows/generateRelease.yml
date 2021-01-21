@@ -18,7 +18,7 @@ jobs:
       matrix:
         config:
           - { name: "Windows MSVC", suffix: "Windows", os: windows-latest, cc: "cl.exe", cxx: "cl.exe", assimp: "OFF" }
-          - { name: "Ubuntu gcc", suffix: "Linux-gcc7", os: ubuntu-18.04, cc: "gcc", cxx: "g++", assimp: "ON" }
+          - { name: "Ubuntu gcc", suffix: "Linux-gcc8", os: ubuntu-18.04, cc: "gcc-8", cxx: "g++-8", assimp: "ON" }
           - { name: "Ubuntu gcc", suffix: "Linux-gcc10", os: ubuntu-20.04, cc: "gcc-10", cxx: "g++-10", assimp: "ON" }
           - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++", assimp: "ON" }
 
