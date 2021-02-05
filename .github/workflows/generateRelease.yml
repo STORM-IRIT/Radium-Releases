@@ -191,4 +191,30 @@ jobs:
          asset_path: ./binaries/${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
          asset_name: ${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
          asset_content_type: application/zip
+         
+         name: Notify master update to Radium-Releases
+
+     - name: Notify Radium-Engine
+       uses: peter-evans/repository-dispatch@v1
+       with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: STORM-IRIT/Radium-Engine
+          event-type: new-tag-event
+          client-payload: '{"tagname": "${{steps.releasename.outputs.TAG_NAME}}"}'
+
+     - name: Notify Radium-Apps
+       uses: peter-evans/repository-dispatch@v1
+       with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: STORM-IRIT/Radium-Apps
+          event-type: new-tag-event
+          client-payload: '{"tagname": "${{steps.releasename.outputs.TAG_NAME}}"}'
+
+     - name: Notify Radium-PluginExample
+       uses: peter-evans/repository-dispatch@v1
+       with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: STORM-IRIT/Radium-PluginExample
+          event-type: new-tag-event
+          client-payload: '{"tagname": "${{steps.releasename.outputs.TAG_NAME}}"}'
 
