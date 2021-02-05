@@ -191,8 +191,6 @@ jobs:
          asset_path: ./binaries/${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
          asset_name: ${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
          asset_content_type: application/zip
-         
-         name: Notify master update to Radium-Releases
 
      - name: Notify Radium-Engine
        uses: peter-evans/repository-dispatch@v1
