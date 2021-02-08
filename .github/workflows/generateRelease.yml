@@ -192,3 +192,17 @@ jobs:
          asset_name: ${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
          asset_content_type: application/zip
 
+  dispatch:
+    needs: upload_release
+    strategy:
+      matrix:
+        repo: ['STORM-IRIT/Radium-Engine', 'STORM-IRIT/Radium-Apps', 'STORM-IRIT/PluginExample-Apps']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_DISPATCH_TOKEN }}
+          repository: ${{ matrix.repo }}
+          event-type: new-tag-event
+          client-payload: '{"tagname": "${{steps.releasename.outputs.TAG_NAME}}"}'
