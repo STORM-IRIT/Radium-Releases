@@ -196,7 +196,7 @@ jobs:
     needs: upload_release
     strategy:
       matrix:
-        repo: ['STORM-IRIT/Radium-Engine', 'STORM-IRIT/Radium-Apps', 'STORM-IRIT/PluginExample-Apps']
+        repo: ['STORM-IRIT/Radium-Engine', 'STORM-IRIT/Radium-Apps', 'STORM-IRIT/Radium-PluginExample']
     runs-on: ubuntu-latest
     steps:
       - name: Repository Dispatch
