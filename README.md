@@ -24,9 +24,5 @@ Depending on you needs, you may want to:
 
 
 ## Content of this repository
-### CMake buildchain
-CMake project that fetches the whole Radium ecosystem, compiles and installs it.
-
-
 ### Continuous Integration Scripts
 Fetch and compile the whole ecosystem each time any of the `master` branch of the related repositories is updated.
