@@ -35,7 +35,7 @@ jobs:
      - name: Clone Radium
        run: |
          mkdir -p install/
-         mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --single-branch && cd ..
+         mkdir -p src && cd src && git clone https://github.com/dlyr/Radium-Engine.git --branch fix-qt-location --single-branch && cd ..
          mkdir -p build/Radium-Engine
          
      - name: Configure Radium
@@ -51,7 +51,7 @@ jobs:
      - name: Clone and configure Radium Apps
        run: |
          cd src 
-         git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch master --single-branch
+         git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch release-candidate --single-branch
          cd ..
          mkdir -p build/Radium-Apps
          cd build/Radium-Apps 
