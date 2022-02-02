@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++" } runs-on:
+          - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++" }
     steps:
       - name: print
         run: |
