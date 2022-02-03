@@ -9,76 +9,76 @@ on:
     branches: [ test-ci ]
 
 jobs:
-  print:
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++" }
-    steps:
-      - name: print
-        run: |
-          clang -v
-          $(brew --prefix llvm)/bin/clang -v
-          #sudo xcode-select -s /Applications/Xcode_11.3.app/Contents/Developer
-          clang -v
-         
-#     build:
+#     print:
 #       runs-on: ${{ matrix.config.os }}
 #       strategy:
 #         fail-fast: false
 #         matrix:
 #           config:
-#             - { name: "Windows MSVC", suffix: "Windows", os: windows-latest, cc: "cl.exe", cxx: "cl.exe" }
-#   #          - { name: "Ubuntu 18.04 gcc9", suffix: "Linux-gcc9", os: ubuntu-18.04, cc: "gcc-9", cxx: "g++-9" }
-#   #          - { name: "Ubuntu 20.04 gcc10", suffix: "Linux-gcc10", os: ubuntu-20.04, cc: "gcc-10", cxx: "g++-10" }
-#   #          - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++" }
-#   
-#       steps:       
-#        - uses: seanmiddleditch/gha-setup-ninja@master
+#             - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++" }
+#       steps:
+#         - name: print
+#           run: |
+#             clang -v
+#             $(brew --prefix llvm)/bin/clang -v
+#             #sudo xcode-select -s /Applications/Xcode_11.3.app/Contents/Developer
+#             clang -v
 #            
-#        - name: Add msbuild to PATH
-#          uses: seanmiddleditch/gha-setup-vsdevenv@master
-#          if: runner.os == 'Windows'
-#   
-#        - name: Install Qt
-#          uses: jurplel/install-qt-action@v2
-#          with:
-#            cached: false
-#            
-#        - name: Clone Radium
-#          run: |
-#            mkdir -p install/
-#            mkdir -p src && cd src && git clone https://github.com/dlyr/Radium-Engine.git --branch fix-qt-location --single-branch && cd ..
-#            mkdir -p build/Radium-Engine
-#            
-#        - name: Configure Radium
-#          run: |
-#            cd build/Radium-Engine 
-#            cmake ../../src/Radium-Engine -GNinja -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
-#            
-#        - name: Build Radium
-#          run: |
-#            cd build/Radium-Engine 
-#            cmake --build . --parallel --config Release --target install
-#            
-#        - name: Clone and configure Radium Apps
-#          run: |
-#            cd src 
-#            git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch release-candidate --single-branch
-#            cd ..
-#            mkdir -p build/Radium-Apps
-#            cd build/Radium-Apps 
-#            cmake ../../src/Radium-Apps -GNinja -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRadium_DIR=../../install/lib/cmake/Radium
-#   
-#        - name: Build Radium Apps
-#          run: |
-#            cd build/Radium-Apps 
-#            cmake --build . --parallel --config Release --target install
-#            
-#        - name: Run qtdeploy on windows
-#          if: runner.os == 'Windows'
-#          run: |
-#            windeployqt.exe install/bin/Radium-Sandbox.exe
-#   
+  build:
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { name: "Windows MSVC", suffix: "Windows", os: windows-latest, cc: "cl.exe", cxx: "cl.exe" }
+#          - { name: "Ubuntu 18.04 gcc9", suffix: "Linux-gcc9", os: ubuntu-18.04, cc: "gcc-9", cxx: "g++-9" }
+#          - { name: "Ubuntu 20.04 gcc10", suffix: "Linux-gcc10", os: ubuntu-20.04, cc: "gcc-10", cxx: "g++-10" }
+#          - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++" }
+
+    steps:       
+     - uses: seanmiddleditch/gha-setup-ninja@master
+         
+     - name: Add msbuild to PATH
+       uses: seanmiddleditch/gha-setup-vsdevenv@master
+       if: runner.os == 'Windows'
+
+     - name: Install Qt
+       uses: jurplel/install-qt-action@v2
+       with:
+         cached: false
+         
+     - name: Clone Radium
+       run: |
+         mkdir -p install/
+         mkdir -p src && cd src && git clone https://github.com/dlyr/Radium-Engine.git --branch fix-qt-location --single-branch && cd ..
+         mkdir -p build/Radium-Engine
+         
+     - name: Configure Radium
+       run: |
+         cd build/Radium-Engine 
+         cmake ../../src/Radium-Engine -GNinja -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
+         
+     - name: Build Radium
+       run: |
+         cd build/Radium-Engine 
+         cmake --build . --parallel --config Release --target install
+         
+     - name: Clone and configure Radium Apps
+       run: |
+         cd src 
+         git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch release-candidate --single-branch
+         cd ..
+         mkdir -p build/Radium-Apps
+         cd build/Radium-Apps 
+         cmake ../../src/Radium-Apps -GNinja -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DRadium_DIR=../../install/lib/cmake/Radium
+
+     - name: Build Radium Apps
+       run: |
+         cd build/Radium-Apps 
+         cmake --build . --parallel --config Release --target install
+         
+     - name: Run qtdeploy on windows
+       if: runner.os == 'Windows'
+       run: |
+         windeployqt.exe install/bin/Radium-Sandbox.exe
+
