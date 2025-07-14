@@ -48,16 +48,27 @@ jobs:
          mkdir -p install/
          mkdir -p src && cd src && git clone --recurse-submodules https://github.com/STORM-IRIT/Radium-Engine.git --single-branch && cd ..
          mkdir -p build/Radium-Engine
-         
+      - name: Configure and build external
+        run: |
+          mkdir -p build/external
+          cmake -S src/Radium-Engine/external -B build/external \
+          -GNinja -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} \
+          -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+          -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DCMAKE_INSTALL_MESSAGE=LAZY \
+          -DRADIUM_UPDATE_VERSION=OFF \
+          -DCMAKE_INSTALL_PREFIX=./install/external
+          cmake --build build/external --parallel --config ${{ matrix.build-type }}
      - name: Configure Radium
        run: |
-         cd build/Radium-Engine 
-         cmake ../../src/Radium-Engine -GNinja -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/ -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY
-         
+         cmake -S ./src/Radium-Engine -B build/Radium-Engine \
+         -GNinja -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} \
+         -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=Release \
+         -DCMAKE_INSTALL_PREFIX=../../install/ -DCMAKE_EXECUTE_PROCESS_COMMAND_ECHO=STDOUT \
+         -DRADIUM_UPDATE_VERSION=OFF -DRADIUM_ENABLE_EXAMPLES=ON -DRADIUM_EXTERNAL_CMAKE_INSTALL_MESSAGE=LAZY \
+         -C install/external/radium-options.cmake
      - name: Build Radium
        run: |
-         cd build/Radium-Engine 
-         cmake --build . --parallel --config Release --target install
+         cmake --build build/Radium-Engine --parallel --config Release --target install
          
      - name: Clone and configure Radium Apps
        run: |
