@@ -10,18 +10,25 @@ on:
   repository_dispatch:
     types: [code-update-event]
 
-jobs:     
+jobs:
+#     https://github.com/orgs/community/discussions/26284
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
+          echo "::set-output name=matrix::$TASKS"
   build:
+    needs: [matrix]
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
       matrix:
-        config:
-          - { name: "Windows MSVC", suffix: "Windows", os: windows-latest, cc: "cl.exe", cxx: "cl.exe" }
-          - { name: "Ubuntu 22.04 gcc", suffix: "Ubuntu-22.04-gcc", os: ubuntu-22.04, cc: "gcc", cxx: "g++" }
-          - { name: "Ubuntu 24.04 gcc", suffix: "Ubuntu-24.04-gcc", os: ubuntu-24.04, cc: "gcc", cxx: "g++" }
-          - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++" }
-
+        config: ${{ fromJson(needs.matrix.outputs.matrix) }}
     steps:       
      - uses: seanmiddleditch/gha-setup-ninja@master
          
@@ -150,19 +157,14 @@ jobs:
 
 
   upload_release:
-    needs: [create_release]
+    needs: [create_release, matrix]
     runs-on: ${{ matrix.config.os }}
     if: always()
 
     strategy:
       fail-fast: false
       matrix:
-        config:
-          - { name: "Windows MSVC", suffix: "Windows", os: windows-latest, cc: "cl.exe", cxx: "cl.exe" }
-          - { name: "Ubuntu 22.04 gcc", suffix: "Ubuntu-22.04-gcc", os: ubuntu-22.04, cc: "gcc", cxx: "g++" }
-          - { name: "Ubuntu 24.04 gcc", suffix: "Ubuntu-24.04-gcc", os: ubuntu-24.04, cc: "gcc", cxx: "g++" }
-          - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++" }
-
+        config: ${{ fromJson(needs.matrix.outputs.matrix) }}
     steps:
     
      - name: Load artifacts from build
