@@ -18,8 +18,8 @@ jobs:
       matrix:
         config:
           - { name: "Windows MSVC", suffix: "Windows", os: windows-latest, cc: "cl.exe", cxx: "cl.exe" }
-          - { name: "Ubuntu 18.04 gcc9", suffix: "Linux-gcc9", os: ubuntu-18.04, cc: "gcc-9", cxx: "g++-9" }
-          - { name: "Ubuntu 20.04 gcc10", suffix: "Linux-gcc10", os: ubuntu-20.04, cc: "gcc-10", cxx: "g++-10" }
+          - { name: "Ubuntu 22.04 gcc9", suffix: "Linux-gcc9", os: ubuntu-22.04, cc: "gcc", cxx: "g++" }
+          - { name: "Ubuntu 24.04 gcc10", suffix: "Linux-gcc10", os: ubuntu-24.04, cc: "gcc", cxx: "g++" }
           - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++" }
 
     steps:       
@@ -30,7 +30,7 @@ jobs:
        if: runner.os == 'Windows'
 
      - name: Install Qt
-       uses: jurplel/install-qt-action@v2
+       uses: jurplel/install-qt-action@v4
        with:
          cached: false
          
@@ -82,12 +82,12 @@ jobs:
          git log -1 | tail -n +6 >> ../..//message.txt
 
      - name: Upload artifact
-       uses: actions/upload-artifact@v1
+       uses: actions/upload-artifact@v4
        with:
          name: binaries
          path: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
      - name: Upload message
-       uses: actions/upload-artifact@v1
+       uses: actions/upload-artifact@v4
        with:
          name: message
          path: ./message.txt
@@ -104,7 +104,7 @@ jobs:
          echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
          echo "::set-output name=TAG_NAME::$(date +'%Y.%m.%d')"
      - name: Load message from build
-       uses: actions/download-artifact@v1
+       uses: actions/download-artifact@v4
        with:
           name: message
      - name: Delete Release if already present
@@ -143,7 +143,7 @@ jobs:
          echo "${{ steps.create_release.outputs.upload_url }}" > release-url.txt
 
      - name: Save upload url for next stop
-       uses: actions/upload-artifact@v1
+       uses: actions/upload-artifact@v4
        with:
          name: releaseurl
          path: release-url.txt
@@ -156,17 +156,17 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
+    matrix:
         config:
           - { name: "Windows MSVC", suffix: "Windows", os: windows-latest, cc: "cl.exe", cxx: "cl.exe" }
-          - { name: "Ubuntu 18.04 gcc9", suffix: "Linux-gcc9", os: ubuntu-18.04, cc: "gcc-9", cxx: "g++-9" }
-          - { name: "Ubuntu 20.04 gcc10", suffix: "Linux-gcc10", os: ubuntu-20.04, cc: "gcc-10", cxx: "g++-10" }
+          - { name: "Ubuntu 22.04 gcc9", suffix: "Linux-gcc9", os: ubuntu-22.04, cc: "gcc", cxx: "g++" }
+          - { name: "Ubuntu 24.04 gcc10", suffix: "Linux-gcc10", os: ubuntu-24.04, cc: "gcc", cxx: "g++" }
           - { name: "MacOS clang", suffix: "macOS", os: macos-latest, cc: "clang", cxx: "clang++" }
 
     steps:
     
      - name: Load artifacts from build
-       uses: actions/download-artifact@v1
+       uses: actions/download-artifact@v4
        with:
           name: releaseurl
 
@@ -177,13 +177,13 @@ jobs:
         echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
 
      - name: Load artifacts from build
-       uses: actions/download-artifact@v1
+       uses: actions/download-artifact@v4
        with:
           name: binaries
 
      - name: Upload Release Asset
        id: upload-release-asset
-       uses: actions/upload-release-asset@v1
+       uses: actions/upload-release-asset@v4
        env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
