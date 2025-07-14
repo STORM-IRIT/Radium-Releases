@@ -37,7 +37,7 @@ jobs:
      - name: Clone Radium
        run: |
          mkdir -p install/
-         mkdir -p src && cd src && git clone https://github.com/STORM-IRIT/Radium-Engine.git --single-branch && cd ..
+         mkdir -p src && cd src && git clone --recurse-submodules https://github.com/STORM-IRIT/Radium-Engine.git --single-branch && cd ..
          mkdir -p build/Radium-Engine
          
      - name: Configure Radium
