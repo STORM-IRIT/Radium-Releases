@@ -9,6 +9,8 @@ on:
     branches: [ master ]
   repository_dispatch:
     types: [code-update-event]
+  pull_request:
+    branches: [ master ]
 
 jobs:
 #     https://github.com/orgs/community/discussions/26284
@@ -102,7 +104,7 @@ jobs:
   create_release:
     needs: [build]
     runs-on: ubuntu-latest
-    if: always()
+    if: github.event.ref_name == github.event.repository.default_branch
     steps:
       
      - name: Compute Radium Release
@@ -159,8 +161,7 @@ jobs:
   upload_release:
     needs: [create_release, matrix]
     runs-on: ${{ matrix.config.os }}
-    if: always()
-
+    if: github.event.ref_name == github.event.repository.default_branch
     strategy:
       fail-fast: false
       matrix:
@@ -196,6 +197,7 @@ jobs:
 
   dispatch:
     needs: upload_release
+    if: github.event.ref_name == github.event.repository.default_branch
     strategy:
       matrix:
         repo: ['STORM-IRIT/Radium-Engine', 'STORM-IRIT/Radium-Apps', 'STORM-IRIT/Radium-PluginExample']
