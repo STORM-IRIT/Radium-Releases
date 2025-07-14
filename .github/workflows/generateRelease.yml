@@ -156,7 +156,7 @@ jobs:
 
     strategy:
       fail-fast: false
-    matrix:
+      matrix:
         config:
           - { name: "Windows MSVC", suffix: "Windows", os: windows-latest, cc: "cl.exe", cxx: "cl.exe" }
           - { name: "Ubuntu 22.04 gcc", suffix: "Ubuntu-22.04-gcc", os: ubuntu-22.04, cc: "gcc", cxx: "g++" }
