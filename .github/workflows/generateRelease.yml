@@ -59,13 +59,15 @@ jobs:
       - name: Clone Radium
         run: |
           git clone --recurse-submodules https://github.com/STORM-IRIT/Radium-Engine.git --single-branch ${{ env.src-dir }}/Radium-Engine
-          
+          radium_sha=`git rev-parse --short HEAD`
+          echo "radium_sha=$radium_sha" >> $GITHUB_ENV
+        
       - name: Cache external build
         id: cache-external
         uses: actions/cache@v4
         with:
           path: ${{ env.build-dir }}/external
-          key: ${{ matrix.config.name }}-external-v1-${{ hashFiles('src/Radium-Engine/external/**/CMakeLists.txt') }} 
+          key: ${{ matrix.config.name }}-external-v1-$radium_sha
       - name: Configure and build external
         run: |
           cmake -S ${{ env.src-dir }}/Radium-Engine/external -B ${{ env.build-dir }}/external \
