@@ -59,7 +59,7 @@ jobs:
       - name: Clone Radium
         run: |
           git clone --recurse-submodules https://github.com/STORM-IRIT/Radium-Engine.git --single-branch ${{ env.src-dir }}/Radium-Engine
-          radium_sha=`git rev-parse --short HEAD`
+          radium_sha=`git -C ${{ env.src-dir }}/Radium-Engine rev-parse --short HEAD`
           echo "radium_sha=$radium_sha" >> $GITHUB_ENV
         
       - name: Cache external build
@@ -94,7 +94,6 @@ jobs:
       - name: Build Radium
         run: |
           cmake --build ${{ env.build-dir }}/Radium-Engine --parallel --config Release --target install
-          find ${{ env.install-dir }}
       - name: Clone and configure Radium Apps
         run: |
           git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch master --single-branch ${{ env.src-dir }}/Radium-Apps
