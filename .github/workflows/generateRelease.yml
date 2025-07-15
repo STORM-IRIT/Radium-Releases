@@ -41,7 +41,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          cached: false
+          cache: false
           
       - name: Clone Radium
         run: |
