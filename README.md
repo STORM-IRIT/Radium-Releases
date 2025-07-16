@@ -18,7 +18,7 @@ This repository also builds the ecosystem and provide [pre-compiled binaries](ht
 
 Depending on you needs, you may want to:
 
-- Use Radium as a viewer and processing software, with graphical user interface. That's the most simple case: simply download the latest release, and run. See <https://github.com/STORM-IRIT/Radium-Releases/releases>. You may also want to compile it from source, checkout [here](Cmake-builchain)
+- Use Radium as a viewer and processing software, with graphical user interface. That's the most simple case: simply download the latest release, and run. See <https://github.com/STORM-IRIT/Radium-Releases/releases>.
 - Contribute to Radium, or develop your own application of plugin: **Radium Libraries** is the default and mandatory repository you need to fetch first. If you only want to _use_ Radium, you still need to compile and install the libraries (see [documentation](https://storm-irit.github.io/Radium-Engine/)).
  Then,
   - If you want to contribute to the application or plugins developments, fetch and compile the **Radium Apps** and **Radium Official Plugins** respectively.
