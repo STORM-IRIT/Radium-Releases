@@ -1,6 +1,8 @@
 {"config":[
-    { "name": "Windows MSVC", "suffix": "Windows", "os": "windows-latest", "cc": "cl.exe", "cxx": "cl.exe" },
-    { "name": "Ubuntu 22.04 gcc", "suffix": "Ubuntu-22.04-gcc", "os": "ubuntu-22.04", "cc": "gcc", "cxx": "g++" },
-    { "name": "Ubuntu 24.04 gcc", "suffix": "Ubuntu-24.04-gcc", "os": "ubuntu-24.04", "cc": "gcc", "cxx": "g++" },
-    { "name": "MacOS clang", "suffix": "macOS", "os": "macos-latest", "cc": "clang", "cxx": "clang++" }
-]}
+    { "name": "Windows MSVC", "suffix": "Windows", "os": "windows-latest", "cc": "cl.exe", "cxx": "cl.exe", "build-type": "Release" },
+    { "name": "Ubuntu 22.04 gcc", "suffix": "Ubuntu-22.04-gcc", "os": "ubuntu-22.04", "cc": "gcc", "cxx": "g++", "build-type": "Release"  },
+    { "name": "Ubuntu 24.04 gcc", "suffix": "Ubuntu-24.04-gcc", "os": "ubuntu-24.04", "cc": "gcc", "cxx": "g++", "build-type": "Release"  },
+    { "name": "MacOS clang", "suffix": "macOS", "os": "macos-latest", "cc": "clang", "cxx": "clang++", "build-type": "Release"  }
+],
+ "build-type":["Release"]
+}
