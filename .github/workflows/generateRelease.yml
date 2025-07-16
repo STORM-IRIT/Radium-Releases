@@ -59,7 +59,7 @@ jobs:
           cache-key-prefix: install-qt-action-${{ matrix.config.name }}-6.2.0
           version: 6.2.0
 
-      - name: Install dep Linux 
+      - name: Install dep Linux
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
@@ -72,7 +72,7 @@ jobs:
           mkdir -p "${{ steps.paths.outputs.external_build_dir }}"
           mkdir -p "${{ steps.paths.outputs.radium_install_dir }}"
           mkdir -p "${{ steps.paths.outputs.external_install_dir }}"
-          
+
       - name: Clone Radium
         id: sha
         run: |
@@ -105,7 +105,7 @@ jobs:
            -c Release --enable-testing OFF \
            --install-external "${{ steps.paths.outputs.external_install_dir }}" \
            --install-radium "${{ steps.paths.outputs.radium_install_dir }}"
-           
+
       - name: Radium Apps
         run: |
           git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch master --single-branch ${{ env.src_prefix }}/Radium-Apps
@@ -113,23 +113,23 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX=${{ env.install_prefix }}/Radium-Apps -DRadium_DIR=${{ env.install_prefix }}/Radium-Engine/lib/cmake/Radium
           cmake --build  ${{ env.build_prefix }}/Radium-Apps  --parallel --config Release --target install
-         
+
       - name: Run qtdeploy on windows
         if: runner.os == 'Windows'
         run: |
           windeployqt.exe  ${{ env.install_prefix }}/Radium-Apps/bin/Radium-Sandbox.exe
-   
+
       - name: Compute Radium Release
         id: releasename
         run: echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
-          
+
       - name: Prepare installation directory for zipping
         run: |
           mv  ${{ env.install_prefix }} ${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}
           7z a -tzip "${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip" "./${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}/"
           echo "Release Changelog" >./message.txt
           git log -1 -C ${{ env.src_prefix }}/Radium-Engine/ | tail -n +6 >> ./message.txt
-   
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -145,7 +145,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     if: github.event.ref_name == github.event.repository.default_branch
-    steps:     
+    steps:
      - name: Compute Radium Release
        id: releasename
        run: |
@@ -205,7 +205,7 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
     steps:
-    
+
      - name: Load artifacts from build
        uses: actions/download-artifact@v4
        with:
