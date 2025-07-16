@@ -1,0 +1,12 @@
+# https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
+default: true
+MD002: false
+MD033: false
+
+MD013:
+  line_length: 520
+  code_block_line_length: 200
+MD034: true
+MD041: false
+# link fragments from php markdown are not recognized
+MD051: false
