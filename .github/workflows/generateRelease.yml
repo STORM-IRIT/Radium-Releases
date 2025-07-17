@@ -137,12 +137,12 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-${{ matrix.config.suffix }}
           path: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
       - name: Upload message
         uses: actions/upload-artifact@v4
         with:
-          name: message
+          name: message-${{ matrix.config.suffix }}
           path: ./message.txt
 
   create_release:
@@ -158,7 +158,7 @@ jobs:
      - name: Load message from build
        uses: actions/download-artifact@v4
        with:
-          name: message
+          name: message-${{ matrix.config.suffix }}
      - name: Delete Release if already present
        uses: dev-drprasad/delete-tag-and-release@v0.1.2
        with:
@@ -224,7 +224,7 @@ jobs:
      - name: Load artifacts from build
        uses: actions/download-artifact@v4
        with:
-          name: binaries
+          name: binaries-${{ matrix.config.suffix }}
 
      - name: Upload Release Asset
        id: upload-release-asset
