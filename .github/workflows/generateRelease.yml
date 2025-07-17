@@ -109,9 +109,13 @@ jobs:
       - name: Radium Apps
         run: |
           git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch master --single-branch ${{ env.src_prefix }}/Radium-Apps
-          cmake -S ${{ env.src_prefix }}/Radium-Apps -B ${{ env.build_prefix }}/Radium-Apps -GNinja \
-          -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
-          -DCMAKE_INSTALL_PREFIX=${{ env.install_prefix }}/Radium-Apps -DRadium_DIR=${{ env.install_prefix }}/Radium-Engine/lib/cmake/Radium
+
+          cmake -S "${{ env.src_prefix }}/Radium-Apps" -B "${{ env.build_prefix }}/Radium-Apps" -GNinja \
+          -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_C_COMPILER=${{ matrix.config.cc }} \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+          -DCMAKE_INSTALL_PREFIX=${{ env.install_prefix }}/Radium-Apps \
+          -DRadium_DIR="${{ github.workspace }}/${{ steps.paths.outputs.radium_install_dir }}/lib/cmake/Radium"
+
           cmake --build  ${{ env.build_prefix }}/Radium-Apps  --parallel --config ${{ matrix.build-type }} --target install
 
       - name: Run qtdeploy on windows
