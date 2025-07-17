@@ -125,7 +125,7 @@ jobs:
 
       - name: Compute Radium Release
         id: releasename
-        run: echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
+        run: echo "RELEASE_NAME=Radium-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Prepare installation directory for zipping
         run: |
@@ -153,8 +153,8 @@ jobs:
      - name: Compute Radium Release
        id: releasename
        run: |
-         echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
-         echo "::set-output name=TAG_NAME::$(date +'%Y.%m.%d')"
+         echo "RELEASE_NAME=Radium-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+         echo "TAG_NAME=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
      - name: Load message from build
        uses: actions/download-artifact@v4
        with:
@@ -218,8 +218,8 @@ jobs:
      - name: Compute Radium Release
        id: releaseinfo
        run: |
-        echo "::set-output name=RELEASE_URL::`cat releaseurl/release-url.txt`"
-        echo "::set-output name=RELEASE_NAME::Radium-$(date +'%Y-%m-%d')"
+         echo "RELEASE_URL=`cat releaseurl/release-url.txt`" >> $GITHUB_OUTPUT
+         echo "RELEASE_NAME=Radium-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
      - name: Load artifacts from build
        uses: actions/download-artifact@v4
@@ -247,7 +247,7 @@ jobs:
     steps:
       - name: Compute Radium Release
         id: releasename
-        run: echo "::set-output name=TAG_NAME::$(date +'%Y-%m-%d')"
+        run: echo "TAG_NAME=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v1
