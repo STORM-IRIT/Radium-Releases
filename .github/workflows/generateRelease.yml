@@ -132,7 +132,7 @@ jobs:
           mv  ${{ env.install_prefix }} ${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}
           7z a -tzip "${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip" "./${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}/"
           echo "Release Changelog" >./message.txt
-          git log -1 -C ${{ env.src_prefix }}/Radium-Engine/ | tail -n +6 >> ./message.txt
+          git -C ${{ env.src_prefix }}/Radium-Engine/ log -1 | tail -n +6 >> ./message.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
