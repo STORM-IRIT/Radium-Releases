@@ -146,9 +146,12 @@ jobs:
           path: ./message.txt
 
   create_release:
-    needs: [build]
+    needs: [build, matrix]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
     steps:
       - name: Compute Radium Release
         id: releasename
