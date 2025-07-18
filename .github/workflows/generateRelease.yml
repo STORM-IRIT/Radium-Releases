@@ -148,7 +148,7 @@ jobs:
   create_release:
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.event.ref_name == github.event.repository.default_branch
+    if: github.ref == 'refs/heads/main'
     steps:
      - name: Compute Radium Release
        id: releasename
@@ -204,7 +204,7 @@ jobs:
   upload_release:
     needs: [create_release, matrix]
     runs-on: ${{ matrix.config.os }}
-    if: github.event.ref_name == github.event.repository.default_branch
+    if: github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
@@ -239,7 +239,7 @@ jobs:
 
   dispatch:
     needs: upload_release
-    if: github.event.ref_name == github.event.repository.default_branch
+    if: github.ref == 'refs/heads/main'
     strategy:
       matrix:
         repo: ['STORM-IRIT/Radium-Engine', 'STORM-IRIT/Radium-Apps', 'STORM-IRIT/Radium-PluginExample']
