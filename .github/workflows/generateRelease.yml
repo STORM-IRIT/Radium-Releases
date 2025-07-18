@@ -159,7 +159,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
            name: message-${{ matrix.config.suffix }}
-
       - name: Delete Release if already present
         uses: dev-drprasad/delete-tag-and-release@v1.1
         with:
@@ -188,12 +187,10 @@ jobs:
            echo "prerelease: true"
            echo "body_path: message/message.txt"
            cat message/message.txt
-
       - shell: bash
         name: Cache upload url
         run: |
           echo "${{ steps.create_release.outputs.upload_url }}" > release-url.txt
-
       - name: Save upload url for next stop
         uses: actions/upload-artifact@v4
         with:
