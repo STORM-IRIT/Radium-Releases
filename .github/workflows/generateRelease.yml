@@ -16,6 +16,7 @@ env:
   install_prefix: install
   build_prefix: build
   src_prefix: src
+  GH_TOKEN: ${{ github.token }}
 
 
 #     https://github.com/orgs/community/discussions/26284
@@ -30,8 +31,35 @@ jobs:
         run: |
           matrix=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  message:
+    runs-on: ubuntu-latest
+    outputs:
+      RELEASE_NAME : ${{ steps.release-name.outputs.RELEASE_NAME }}
+      TAG_NAME : ${{ steps.release-name.outputs.TAG_NAME }}
+    steps:
+      - name: Clone Radium and create message
+        id: sha
+        run: |
+          git clone --recurse-submodules https://github.com/STORM-IRIT/Radium-Engine.git --single-branch ${{ env.src_prefix }}/Radium-Engine
+          cd "${{ env.src_prefix }}/Radium-Engine"
+          from=`gh release list --exclude-drafts --exclude-pre-releases -L1 --json publishedAt | jq -r '.[] | .publishedAt '`
+          cd "${{ github.workspace }}"
+          echo "Release Changelog" >./message.txt
+          git -C ${{ env.src_prefix }}/Radium-Engine/ log --since="$from" --pretty=format:"- %h %ad %s" --date=short | grep Merge >> ./message.txt
+      - name: Upload message
+        uses: actions/upload-artifact@v4
+        with:
+          name: message
+          path: ./message.txt
+      - name: Compute Radium Release and TAG
+        id: release-name
+        run: |
+          echo "RELEASE_NAME=Radium-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+          echo "TAG_NAME=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+
   build:
-    needs: [matrix]
+    needs: [message,matrix]
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
@@ -123,136 +151,59 @@ jobs:
         run: |
           windeployqt.exe  ${{ env.install_prefix }}/Radium-Apps/bin/Radium-Sandbox.exe
 
-      - name: Compute Radium Release
-        id: releasename
-        run: echo "RELEASE_NAME=Radium-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
       - name: Prepare installation directory for zipping
         run: |
-          mv  ${{ env.install_prefix }} ${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}
-          7z a -tzip "${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip" "./${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}/"
-          echo "Release Changelog" >./message.txt
-          git -C ${{ env.src_prefix }}/Radium-Engine/ log -1 | tail -n +6 >> ./message.txt
+          mv  ${{ env.install_prefix }} ${{needs.message.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}
+          7z a -tzip "${{needs.message.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip" "./${{needs.message.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}/"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: binaries-${{ matrix.config.suffix }}
-          path: ${{steps.releasename.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
-      - name: Upload message
-        uses: actions/upload-artifact@v4
-        with:
-          name: message-${{ matrix.config.suffix }}
-          path: ./message.txt
+          path: ${{needs.message.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
 
   create_release:
-    needs: [build, matrix]
+    needs: [build, message]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
     steps:
-      - name: Compute Radium Release
-        id: releasename
-        run: |
-          echo "RELEASE_NAME=Radium-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-          echo "TAG_NAME=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
-      - name: Load message from build
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
-        with:
-           name: message-${{ matrix.config.suffix }}
+
       - name: Delete Release if already present
         uses: dev-drprasad/delete-tag-and-release@v1.1
         with:
           delete_release: true # default: false
-          tag_name: ${{ steps.releasename.outputs.TAG_NAME }} # tag name to delete
+          tag_name: ${{ needs.message.outputs.TAG_NAME }} # tag name to delete
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Release
         id: create_release
-        #uses: softprops/action-gh-release@v1
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.releasename.outputs.TAG_NAME }}
-          #name: ${{steps.releasename.outputs.RELEASE_NAME}}
-          release_name: ${{ steps.releasename.outputs.RELEASE_NAME }}
-          draft: false
-          prerelease: true
-          body_path: message/message.txt
-      - name: Print debug infor for PR
+        run: |
+            gh release create ${{ needs.message.outputs.TAG_NAME }} -t ${{ needs.message.outputs.RELEASE_NAME}} -F ./message.txt -p *.zip"
+
+      - name: Print debug info for PR
         run: |
            echo "Debug informations for PR"
-           echo "tag_name: ${{steps.releasename.outputs.TAG_NAME}}"
-           echo "name: ${{steps.releasename.outputs.RELEASE_NAME}}"
+           echo "tag_name: ${{needs.message.outputs.TAG_NAME}}"
+           echo "name: ${{needs.message.outputs.RELEASE_NAME}}"
            echo "draft: false"
            echo "prerelease: true"
            echo "body_path: message/message.txt"
            cat message/message.txt
-      - shell: bash
-        name: Cache upload url
-        run: |
-          echo "${{ steps.create_release.outputs.upload_url }}" > release-url.txt
-      - name: Save upload url for next stop
-        uses: actions/upload-artifact@v4
-        with:
-          name: releaseurl
-          path: release-url.txt
-
-
-  upload_release:
-    needs: [create_release, matrix]
-    runs-on: ${{ matrix.config.os }}
-    if: github.ref == 'refs/heads/main'
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
-    steps:
-
-     - name: Load artifacts from build
-       uses: actions/download-artifact@v4
-       with:
-          name: releaseurl
-
-     - name: Compute Radium Release
-       id: releaseinfo
-       run: |
-         echo "RELEASE_URL=`cat releaseurl/release-url.txt`" >> $GITHUB_OUTPUT
-         echo "RELEASE_NAME=Radium-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-     - name: Load artifacts from build
-       uses: actions/download-artifact@v4
-       with:
-          name: binaries-${{ matrix.config.suffix }}
-
-     - name: Upload Release Asset
-       id: upload-release-asset
-       uses: actions/upload-release-asset@v4
-       env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-       with:
-         upload_url: ${{steps.releaseinfo.outputs.RELEASE_URL}}
-         asset_path: ./binaries/${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
-         asset_name: ${{steps.releaseinfo.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip
-         asset_content_type: application/zip
 
   dispatch:
-    needs: upload_release
+    needs: [message,create_release]
     if: github.ref == 'refs/heads/main'
     strategy:
       matrix:
         repo: ['STORM-IRIT/Radium-Engine', 'STORM-IRIT/Radium-Apps', 'STORM-IRIT/Radium-PluginExample']
     runs-on: ubuntu-latest
     steps:
-      - name: Compute Radium Release
-        id: releasename
-        run: echo "TAG_NAME=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ matrix.repo }}
           event-type: new-tag-event
-          client-payload: '{"tagname": "${{steps.releasename.outputs.TAG_NAME}}"}'
+          client-payload: '{"tagname": "${{ needs.message.outputs.TAG_NAME }}"}'
