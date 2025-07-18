@@ -150,55 +150,55 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-     - name: Compute Radium Release
-       id: releasename
-       run: |
-         echo "RELEASE_NAME=Radium-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-         echo "TAG_NAME=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
-     - name: Load message from build
-       uses: actions/download-artifact@v4
-       with:
-          name: message-${{ matrix.config.suffix }}
-     - name: Delete Release if already present
-       uses: dev-drprasad/delete-tag-and-release@v0.1.2
-       with:
-         delete_release: true # default: false
-         tag_name: ${{steps.releasename.outputs.TAG_NAME}} # tag name to delete
-       env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-     - name: Create Release
-       id: create_release
-       #uses: softprops/action-gh-release@v1
-       uses: actions/create-release@v1
-       env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-       with:
-         tag_name: ${{steps.releasename.outputs.TAG_NAME}}
-         #name: ${{steps.releasename.outputs.RELEASE_NAME}}
-         release_name: ${{steps.releasename.outputs.RELEASE_NAME}}
-         draft: false
-         prerelease: true
-         body_path: message/message.txt
-     - name: Print debug infor for PR
-       run: |
-         echo "Debug informations for PR"
-         echo "tag_name: ${{steps.releasename.outputs.TAG_NAME}}"
-         echo "name: ${{steps.releasename.outputs.RELEASE_NAME}}"
-         echo "draft: false"
-         echo "prerelease: true"
-         echo "body_path: message/message.txt"
-         cat message/message.txt
+      - name: Compute Radium Release
+        id: releasename
+        run: |
+          echo "RELEASE_NAME=Radium-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+          echo "TAG_NAME=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+      - name: Load message from build
+        uses: actions/download-artifact@v4
+        with:
+           name: message-${{ matrix.config.suffix }}
 
-     - shell: bash
-       name: Cache upload url
-       run: |
-         echo "${{ steps.create_release.outputs.upload_url }}" > release-url.txt
+      - name: Delete Release if already present
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        with:
+          delete_release: true # default: false
+          tag_name: ${{ steps.releasename.outputs.TAG_NAME }} # tag name to delete
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        id: create_release
+        #uses: softprops/action-gh-release@v1
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.releasename.outputs.TAG_NAME }}
+          #name: ${{steps.releasename.outputs.RELEASE_NAME}}
+          release_name: ${{ steps.releasename.outputs.RELEASE_NAME }}
+          draft: false
+          prerelease: true
+          body_path: message/message.txt
+      - name: Print debug infor for PR
+        run: |
+           echo "Debug informations for PR"
+           echo "tag_name: ${{steps.releasename.outputs.TAG_NAME}}"
+           echo "name: ${{steps.releasename.outputs.RELEASE_NAME}}"
+           echo "draft: false"
+           echo "prerelease: true"
+           echo "body_path: message/message.txt"
+           cat message/message.txt
 
-     - name: Save upload url for next stop
-       uses: actions/upload-artifact@v4
-       with:
-         name: releaseurl
-         path: release-url.txt
+      - shell: bash
+        name: Cache upload url
+        run: |
+          echo "${{ steps.create_release.outputs.upload_url }}" > release-url.txt
+
+      - name: Save upload url for next stop
+        uses: actions/upload-artifact@v4
+        with:
+          name: releaseurl
+          path: release-url.txt
 
 
   upload_release:
