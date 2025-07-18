@@ -26,7 +26,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - id: set-matrix
         run: |
           matrix=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
@@ -153,10 +153,10 @@ jobs:
 
       - name: Prepare installation directory for zipping
         run: |
-          mv  ${{ env.install_prefix }} ${{needs.message.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}
+          mv "${{ env.install_prefix }}" "${{needs.message.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}"
           7z a -tzip "${{needs.message.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}.zip" "./${{needs.message.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}/"
           # move back for cache
-          mv  ${{needs.message.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }} ${{ env.install_prefix }}
+          mv "${{needs.message.outputs.RELEASE_NAME}}-${{ matrix.config.suffix }}" "${{ env.install_prefix }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -169,8 +169,21 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
+      - uses: actions/checkout@v4
       - name: Download all artifacts
         uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Print debug info for PR
+        run: |
+          ls -R
+          echo "Debug informations for PR"
+          echo "tag_name: ${{needs.message.outputs.TAG_NAME}}"
+          echo "name: ${{needs.message.outputs.RELEASE_NAME}}"
+          echo "draft: false"
+          echo "prerelease: true"
+          echo "body_path: dist/message/message.txt"
+          cat dist/message/message.txt
 
       - name: Delete Release if already present
         uses: dev-drprasad/delete-tag-and-release@v1.1
@@ -182,17 +195,8 @@ jobs:
       - name: Create Release
         id: create_release
         run: |
-            gh release create ${{ needs.message.outputs.TAG_NAME }} -t ${{ needs.message.outputs.RELEASE_NAME}} -F ./message.txt -p *.zip"
-
-      - name: Print debug info for PR
-        run: |
-           echo "Debug informations for PR"
-           echo "tag_name: ${{needs.message.outputs.TAG_NAME}}"
-           echo "name: ${{needs.message.outputs.RELEASE_NAME}}"
-           echo "draft: false"
-           echo "prerelease: true"
-           echo "body_path: message/message.txt"
-           cat message/message.txt
+          mv dist/*/*.zip dist
+          gh release create "${{ needs.message.outputs.TAG_NAME }}" -t "${{ needs.message.outputs.RELEASE_NAME }}" -F ./dist/message/message.txt -p dist/*.zip
 
   dispatch:
     needs: [message,create_release]
