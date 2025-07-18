@@ -45,8 +45,13 @@ jobs:
           cd "${{ env.src_prefix }}/Radium-Engine"
           from=`gh release list --exclude-drafts --exclude-pre-releases -L1 --json publishedAt | jq -r '.[] | .publishedAt '`
           cd "${{ github.workspace }}"
-          echo "Release Changelog" >./message.txt
-          git -C ${{ env.src_prefix }}/Radium-Engine/ log --since="$from" --pretty=format:"- %h %ad %s" --date=short | grep Merge >> ./message.txt
+          echo "Radium Engine Changelog" >./message.txt
+          git -C ${{ env.src_prefix }}/Radium-Engine/ log --since="$from" --pretty=format:"- %ad %s" --date=short | grep Merge | sed 's|#|https://github.com/STORM-IRIT/Radium-Engine/pull/|' >> ./message.txt
+
+          git clone https://github.com/STORM-IRIT/Radium-Apps.git --branch master --single-branch ${{ env.src_prefix }}/Radium-Apps
+          echo ""
+          echo "Radium Apps Changelog" >> ./message.txt
+          git -C ${{ env.src_prefix }}/Radium-Apps/ log --since="$from" --pretty=format:"- %ad %s" --date=short | grep Merge | sed 's|#|https://github.com/STORM-IRIT/Radium-Apps/pull/|' >> ./message.txt
       - name: Upload message
         uses: actions/upload-artifact@v4
         with:
@@ -176,7 +181,6 @@ jobs:
           path: dist
       - name: Print debug info for PR
         run: |
-          ls -R
           echo "Debug informations for PR"
           echo "tag_name: ${{needs.message.outputs.TAG_NAME}}"
           echo "name: ${{needs.message.outputs.RELEASE_NAME}}"
