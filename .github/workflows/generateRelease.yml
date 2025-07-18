@@ -6,11 +6,11 @@ defaults:
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   repository_dispatch:
     types: [code-update-event]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 env:
   install_prefix: install
